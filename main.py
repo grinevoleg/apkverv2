@@ -149,7 +149,11 @@ def read_index(key: Optional[str] = None):
 
 @app.post("/apk/", response_model=Apk, dependencies=[Depends(verify_api_key)])
 def create_apk_item(apk: ApkCreate, db: Session = Depends(get_db)):
-    db_apk = ApkModel(**apk.dict())
+    apk_data = apk.dict(exclude_unset=True)
+    if 'id' in apk_data:
+        del apk_data['id']  # Удаляем id если он есть
+    
+    db_apk = ApkModel(**apk_data)
     db.add(db_apk)
     db.commit()
     db.refresh(db_apk)
