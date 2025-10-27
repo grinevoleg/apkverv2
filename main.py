@@ -24,7 +24,15 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=require"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    pool_size=10,  # Базовый размер пула соединений
+    max_overflow=20,  # Максимальное количество дополнительных соединений
+    pool_pre_ping=True,  # Проверка соединений перед использованием
+    pool_recycle=3600,  # Переиспользование соединений каждые 3600 секунд
+    pool_timeout=30,  # Время ожидания соединения из пула
+    echo=False  # Отключить логирование SQL запросов
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
